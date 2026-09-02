@@ -1,0 +1,251 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-GB"
+tone_instructions: "Be direct, technical, and actionable. Cite exact lines. Prefer concrete guidance over vague suggestions. Use British English."
+early_access: false
+
+knowledge_base:
+  opt_out: false
+  web_search:
+    enabled: false
+  code_guidelines:
+    enabled: true
+
+code_generation:
+  docstrings:
+    language: "en-GB"
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: true
+  high_level_summary: true
+  high_level_summary_in_walkthrough: true
+  high_level_summary_instructions: |
+    Summarise the PR by concern: the Zabbix release artifact (`template_bunkerweb.yaml`), Prometheus fixture and import harness (`tests/`), CI and release automation (`.github/workflows/`), documentation, and repository tooling.
+    Always call out affected items, macros, triggers, or discovery rules; the `vendor.version` change when the template changed; new or changed exporter metrics; fixture and import-harness coverage; documentation impact; and any change to signed-tag or release-asset behaviour.
+    Keep the summary terse, technical, and suitable for maintainers of a security-monitoring template.
+  review_status: true
+  review_details: true
+  collapse_walkthrough: false
+  changed_files_summary: true
+  sequence_diagrams: false
+  estimate_code_review_effort: true
+  assess_linked_issues: true
+  related_issues: true
+  related_prs: true
+  suggested_labels: false
+  suggested_reviewers: false
+  enable_prompt_for_ai_agents: true
+  # Fun features — keep CodeRabbit cheerful.
+  poem: true
+  in_progress_fortune: true
+  commit_status: true
+  fail_commit_status: false
+  abort_on_close: true
+  auto_review:
+    enabled: true
+    drafts: false
+    auto_incremental_review: true
+    auto_pause_after_reviewed_commits: 8
+    base_branches:
+      - "main"
+    ignore_title_keywords:
+      - "WIP"
+      - "[WIP]"
+      - "RFC"
+      - "DO NOT REVIEW"
+    ignore_usernames:
+      - "dependabot[bot]"
+
+  slop_detection:
+    enabled: true
+    label: "needs-review"
+
+  pre_merge_checks:
+    title:
+      mode: "warning"
+      requirements: |
+        Use an imperative Conventional Commit title with one concern and roughly 70 characters or fewer.
+        Match repository history, for example: "feat: add cache metrics", "fix(ci): preserve signed release validation", or "deps/tests: update the Zabbix image digest".
+        Put implementation detail in the PR description, not the title.
+    description:
+      mode: "warning"
+    issue_assessment:
+      mode: "off"
+    docstrings:
+      mode: "off"
+
+  finishing_touches:
+    # Template validation requires the real Zabbix stack; do not generate speculative tests.
+    unit_tests:
+      enabled: false
+
+  path_filters:
+    - "**"
+    - "!**/node_modules/**"
+    - "!**/.venv/**"
+    - "!**/venv/**"
+    - "!**/.pytest_cache/**"
+    - "!**/__pycache__/**"
+    - "!**/dist/**"
+    - "!**/build/**"
+    - "!**/*.min.js"
+    - "!**/*.svg"
+    - "!**/*.drawio"
+    - "!**/*.patch*"
+    - "!**/*.zip"
+    - "!**/*.tar.gz"
+    - "!.claude/**"
+    - "!.gemini/**"
+
+  path_instructions:
+    - path: "template_bunkerweb.yaml"
+      instructions: |
+        This is the Zabbix 7.0 release artifact. Review it as executable monitoring configuration, not ordinary hand-written YAML:
+          - Keep `zabbix_export.version` at `"7.0"`, the template name at `BunkerWeb by HTTP`, the group at `Templates/Applications`, and `vendor.name` at `Bunkerity` unless the PR explicitly changes product identity or the supported Zabbix baseline.
+          - Every content change to this file must strictly increase `vendor.version` relative to the base revision using Zabbix's `X.Y-N` format. A config-only or documentation-only PR does not need a template version bump.
+          - Preserve existing key order, quoted-scalar style, and UUIDs. New exported objects need unique 32-character lowercase hexadecimal UUIDs; flag duplicate or regenerated UUIDs.
+          - Preserve the single-scrape design unless a PR justifies another HTTP request. `bunkerweb.metrics.raw` is the `HTTP_AGENT` master item, keeps no history, and deliberately accepts 200 and 503. Dependent items and discovery rules must reference that key as their `master_item`.
+          - Keep item keys in the existing `bw.*` namespace, except the established master key. Keep user macros in `{$BUNKERWEB.*}` and verify every macro or item referenced by a trigger expression exists.
+          - Prometheus preprocessing expressions must use real exporter metric and label names. Counter rates must aggregate the intended series before `CHANGE_PER_SECOND` and discard negative reset samples where appropriate.
+          - Low-level discovery must emit one row per discovery key. Service discovery deliberately uses the single-label `bw_http_latency_count`; do not replace it with a multi-label status metric that creates duplicate `{#SERVER_NAME}` rows. Shared-dictionary discovery must remain unique by `{#DICT}`.
+          - Check trigger thresholds, time windows, units, dependencies, and zero-denominator handling against the items they consume. Do not turn an expected missing metric into an unsupported item without an explicit reason.
+          - When an item, macro, trigger, discovery rule, metric selector, or user-visible default changes, require the corresponding update to `tests/metrics.prom`, `tests/import_template.py`, and `README.md` where their contract changes.
+          - Never add real exporter addresses, internal hostnames, credentials, API tokens, or customer data. Use documented placeholders.
+
+    - path: "tests/metrics.prom"
+      instructions: |
+        This is the deterministic Prometheus exposition fixture served to Zabbix during integration tests:
+          - Keep each line valid Prometheus text exposition and use the exact metric and label names selected by the template's preprocessing rules.
+          - Add representative series when a new item or discovery rule needs data. Preserve at least one discoverable service and shared dictionary, and ensure discovery source metrics produce unique rows.
+          - Use non-negative, internally consistent sample values that exercise aggregation and derived-rate formulas without manufacturing a false unsupported state.
+          - Use example domains and synthetic values only; never paste production metrics or customer identifiers.
+
+    - path: "tests/import_template.py"
+      instructions: |
+        This standard-library harness is CI's executable contract for importing and exercising the template:
+          - Keep it dependency-free unless a new dependency has a measured benefit. Follow the Black and Flake8 configuration in `.pre-commit-config.yaml`.
+          - Preserve JSON-RPC error handling, bounded network timeouts, actionable failures, and the distinction between Zabbix API errors and connectivity/decoding errors. Never print the bearer token.
+          - The hard-coded `Admin`/`zabbix` credentials belong only to the isolated Docker fixture; do not report them as production secrets or reuse them outside that stack.
+          - Preserve the previous-template import before the proposed template and compare versions only when the template bytes changed. Changed templates must have a strictly greater parsed `X.Y-N` version.
+          - Keep the host replacement deterministic and verify required items have values, expected discovery prefixes exist, and no imported item is unsupported. Extend the required lists only for behavior CI must guarantee.
+          - Keep GitHub output append-only and fail with a concise message on stderr and a non-zero exit.
+
+    - path: "tests/docker-compose.yml"
+      instructions: |
+        This Compose file is an isolated Zabbix 7.0 integration stack:
+          - Pin every image by digest. A moving-looking tag such as `alpine-7.0-latest` is acceptable only with a digest and must stay on Zabbix 7.0; do not accept 7.1+ updates without an intentional compatibility change.
+          - Preserve the read-only Prometheus fixture mount, service health/dependency ordering, and the web port bound to `127.0.0.1`.
+          - The simple database credentials are deliberate disposable test values. Never introduce production credentials, remote databases, or public bind addresses.
+          - Keep changes compatible with the Compose integration flow documented in `AGENTS.md`.
+
+    - path: "**/*.py"
+      instructions: |
+        Python is formatted with Black and linted by the repository's Flake8 hook:
+          - Use `snake_case` for functions and variables, uppercase constants, and explicit error messages.
+          - Prefer the standard library and existing helpers. Do not add dependencies or abstractions for behavior a few direct lines already cover.
+          - Bound network operations, close resources with context managers, and never expose credentials or authorization headers in output.
+
+    - path: ".github/workflows/**/*.yml"
+      instructions: &github_actions_instructions |
+        GitHub Actions must remain reproducible and safe:
+          - Pin third-party actions to full commit SHAs and keep `persist-credentials: false` unless a step explicitly requires credentials.
+          - Declare minimal permissions. Do not combine `pull_request_target` or other privileged events with untrusted code, and pass event-controlled values through `env:` before shell use.
+          - Preserve the validation sequence: Plumber succeeds, the prior template is loaded for pull requests, Zabbix starts, the template imports and collects supported items, failure logs are captured, and Compose is always stopped with volumes removed.
+          - Preserve `cancel-in-progress: false`; tag-triggered release work must not be cancelled midway.
+          - Release only from an annotated tag GitHub verifies as signed, require `v${vendor.version}`, compare the tagged artifact to the checkout, refuse conflicting or incomplete releases, and publish both `template_bunkerweb.yaml` and `SHA256SUMS`.
+          - Shell blocks should use strict error handling where multiple commands can fail, quote expansions, and avoid logging tokens.
+
+    - path: ".github/workflows/**/*.yaml"
+      instructions: *github_actions_instructions
+
+    - path: ".github/dependabot.yml"
+      instructions: |
+        Keep dependency automation within the repository's supported tracks:
+          - Preserve the daily Europe/Paris schedule, `main` target, maintainer assignment, and `deps/gha` / `deps/tests` commit prefixes.
+          - Keep NGINX below 1.29 and Zabbix images below 7.1 until maintainers intentionally expand compatibility.
+          - Dependency PRs must update immutable action SHAs or image digests without silently widening the supported major/minor range.
+
+    - path: ".pre-commit-config.yaml"
+      instructions: |
+        Keep repository quality checks reproducible:
+          - Pin remote hooks to immutable commit SHAs with their `# frozen:` version comments.
+          - Preserve the system Prettier hook for Markdown and ordinary YAML, and keep `template_bunkerweb.yaml` excluded to avoid whole-export churn.
+          - Keep Black and Flake8 aligned with the Python harness and do not weaken Codespell or structural file checks.
+          - Avoid hooks that require undeclared system tools or rewrite unrelated historical files without an intentional migration.
+
+    - path: ".plumber.yaml"
+      instructions: |
+        This file configures the GitHub Actions security scan. Keep the documented Plumber schema version and default ruleset aligned with `.github/workflows/plumber.yml`; do not weaken the workflow's score, attestation verification, SARIF upload, or permissions without justification.
+
+    - path: "README.md"
+      instructions: |
+        README content is part of the template's user-facing contract:
+          - Keep requirements, exporter settings, scrape architecture, troubleshooting, and release instructions aligned with the current template and CI.
+          - The macro table must exactly match exported macro names, defaults, and meanings. Update the monitoring summary when items, triggers, or discovery behavior changes.
+          - Preserve the distinction between an unreachable exporter and the intentional 503 returned when Monitoring is not initialized.
+          - Keep the `X.Y-N` template to signed `vX.Y-N` tag relationship accurate. Commands must be executable and must not contain real infrastructure values.
+
+    - path: "**/*.md"
+      instructions: |
+        Documentation should be concise, accurate, and written in British English:
+          - Keep a sensible heading hierarchy and prefer concrete prerequisites and commands over narrative.
+          - Verify paths, settings, versions, links, and validation commands against repository files.
+          - When behavior, defaults, compatibility, or release mechanics change, require matching documentation in the same PR.
+
+    - path: "**/*.yaml"
+      instructions: &yaml_instructions |
+        YAML files must remain structured and reproducible:
+          - Use two-space indentation, preserve established key ordering, and avoid duplicate keys or unintended multi-document streams.
+          - Pin actions, images, and dependency revisions where the repository requires immutable references.
+          - Never commit secrets or live exporter addresses; use repository secrets or obvious examples.
+          - Do not suggest whole-file reformatting of `template_bunkerweb.yaml`; its exported ordering and quoted style are intentional.
+
+    - path: "**/*.yml"
+      instructions: *yaml_instructions
+
+  tools:
+    github-checks:
+      enabled: true
+      timeout_ms: 120000
+    languagetool:
+      enabled: true
+      level: "default"
+    gitleaks:
+      enabled: true
+    yamllint:
+      enabled: true
+    actionlint:
+      enabled: true
+    shellcheck:
+      enabled: true
+    markdownlint:
+      enabled: true
+    checkov:
+      enabled: true
+    osvScanner:
+      enabled: true
+    dotenvLint:
+      enabled: true
+    # CodeRabbit's Flake8 integration requires `.flake8`; pre-commit owns this repository's inline options.
+    flake8:
+      enabled: false
+    # Not applicable to this YAML, Markdown, and standard-library Python repository.
+    luacheck:
+      enabled: false
+    hadolint:
+      enabled: false
+    htmlhint:
+      enabled: false
+    ruff:
+      enabled: false
+    eslint:
+      enabled: false
+    stylelint:
+      enabled: false
+    semgrep:
+      enabled: false
+    biome:
+      enabled: false
+
+chat:
+  auto_reply: true
