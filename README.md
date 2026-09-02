@@ -11,6 +11,9 @@
   <a href="https://github.com/bunkerity/bunkerweb-zabbix-template/releases">
     <img alt="Latest template release" src="https://img.shields.io/github/v/release/bunkerity/bunkerweb-zabbix-template?label=template" />
   </a>
+  <a href="https://github.com/bunkerity/bunkerweb-zabbix-template/actions/workflows/plumber.yml">
+    <img alt="Plumber security scan" src="https://github.com/bunkerity/bunkerweb-zabbix-template/actions/workflows/plumber.yml/badge.svg" />
+  </a>
   <a href="https://panel.bunkerweb.io/store/bunkerweb-pro">
     <img alt="BunkerWeb PRO" src="https://img.shields.io/badge/BunkerWeb-PRO-0d6efd" />
   </a>
