@@ -20,6 +20,8 @@ jobs:
     uses: ./.github/workflows/plumber.yml
     permissions:
       contents: read
+      security-events: write
+      id-token: write
 
   validate:
     name: Import into Zabbix 7.0

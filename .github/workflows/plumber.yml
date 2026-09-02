@@ -6,12 +6,14 @@ on:
   workflow_call:
   workflow_dispatch:
 
-permissions: read-all
-
 jobs:
   plumber:
     name: Analyze GitHub Actions workflows
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write # OIDC identity required by score-push
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -28,6 +30,6 @@ jobs:
           config-file: .plumber.yaml
           min-score: B
           soft-fail: false
-          upload-sarif: false
-          score-push: false
+          upload-sarif: true
+          score-push: true
           upload-artifacts: true
