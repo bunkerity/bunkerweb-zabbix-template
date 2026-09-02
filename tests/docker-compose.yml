@@ -1,0 +1,47 @@
+name: bunkerweb-zabbix-template-test
+
+services:
+  metrics:
+    image: nginx:1.28.2-alpine-slim@sha256:8393e91e100dcda823dcdd5f7d08e3e1be61670c41b513c612d2f80913a46a83
+    volumes:
+      - ./metrics.prom:/usr/share/nginx/html/metrics:ro
+
+  database:
+    image: postgres:16-alpine@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
+    environment:
+      POSTGRES_DB: zabbix
+      POSTGRES_PASSWORD: zabbix
+      POSTGRES_USER: zabbix
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zabbix"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  server:
+    image: zabbix/zabbix-server-pgsql:alpine-7.0-latest@sha256:ae22510b336b37bf0e721be418c69ee8cad35d432954eba5a0d298348771b71c
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      DB_SERVER_HOST: database
+      POSTGRES_DB: zabbix
+      POSTGRES_PASSWORD: zabbix
+      POSTGRES_USER: zabbix
+
+  web:
+    image: zabbix/zabbix-web-nginx-pgsql:alpine-7.0-latest@sha256:f30732da18993807fb3b3d8571d179bb32b6e391d4e2ab82dd5e132ce33b3325
+    depends_on:
+      database:
+        condition: service_healthy
+      server:
+        condition: service_started
+    environment:
+      DB_SERVER_HOST: database
+      PHP_TZ: UTC
+      POSTGRES_DB: zabbix
+      POSTGRES_PASSWORD: zabbix
+      POSTGRES_USER: zabbix
+      ZBX_SERVER_HOST: server
+    ports:
+      - "127.0.0.1:18080:8080"

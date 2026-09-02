@@ -23,6 +23,11 @@ zabbix_export:
 
         Set {$BUNKERWEB.EXPORTER.PORT} and {$BUNKERWEB.EXPORTER.PATH} to match
         PROMETHEUS_EXPORTER_PORT and PROMETHEUS_EXPORTER_URL if they were changed.
+
+        https://github.com/bunkerity/bunkerweb-zabbix-template
+      vendor:
+        name: Bunkerity
+        version: "7.0-0"
       groups:
         - name: Templates/Applications
       items:

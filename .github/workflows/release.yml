@@ -1,0 +1,139 @@
+name: Validate and release template
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions: read-all
+
+concurrency:
+  group: zabbix-template-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  plumber:
+    uses: ./.github/workflows/plumber.yml
+    permissions:
+      contents: read
+
+  validate:
+    name: Import into Zabbix 7.0
+    needs: plumber
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.import.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Load the previous template
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: git show "$BASE_SHA:template_bunkerweb.yaml" > "$RUNNER_TEMP/previous-template.yaml"
+
+      - name: Start Zabbix
+        run: docker compose -f tests/docker-compose.yml up -d --wait
+
+      - name: Import template
+        id: import
+        run: |
+          target=$(docker compose -f tests/docker-compose.yml exec -T server getent hosts metrics | awk 'NR == 1 { print $1 }')
+          if [ -z "$target" ]; then
+            echo "Unable to resolve the metrics fixture inside the Zabbix network" >&2
+            exit 1
+          fi
+          args=(
+            --url http://127.0.0.1:18080/api_jsonrpc.php
+            --template template_bunkerweb.yaml
+            --target "$target"
+            --github-output "$GITHUB_OUTPUT"
+          )
+          if [ -f "$RUNNER_TEMP/previous-template.yaml" ]; then
+            args+=(--previous-template "$RUNNER_TEMP/previous-template.yaml")
+          fi
+          python3 tests/import_template.py "${args[@]}"
+
+      - name: Show Zabbix logs on failure
+        if: failure()
+        run: docker compose -f tests/docker-compose.yml logs --no-color
+
+      - name: Stop Zabbix
+        if: always()
+        run: docker compose -f tests/docker-compose.yml down --volumes
+
+  release:
+    name: Publish ${{ needs.validate.outputs.version }}
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - plumber
+      - validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TEMPLATE_VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          tag="$GITHUB_REF_NAME"
+          expected_tag="v${TEMPLATE_VERSION}"
+          released_template="$RUNNER_TEMP/template_bunkerweb.yaml"
+
+          if [ "$tag" != "$expected_tag" ]; then
+            echo "Tag $tag does not match template version $TEMPLATE_VERSION; expected $expected_tag" >&2
+            exit 1
+          fi
+
+          tag_ref=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${tag}")
+          tag_type=$(printf '%s' "$tag_ref" | jq -r '.object.type')
+          tag_sha=$(printf '%s' "$tag_ref" | jq -r '.object.sha')
+          if [ "$tag_type" != "tag" ]; then
+            echo "Tag $tag is lightweight; create it with git tag -s" >&2
+            exit 1
+          fi
+
+          verification=$(gh api "repos/${GITHUB_REPOSITORY}/git/tags/${tag_sha}" --jq '"\(.verification.verified) \(.verification.reason)"')
+          if [ "${verification%% *}" != "true" ]; then
+            echo "Tag $tag is not signed by a key GitHub can verify (${verification#* }); create it with git tag -s" >&2
+            exit 1
+          fi
+
+          git show "$tag:template_bunkerweb.yaml" > "$released_template"
+          if ! cmp --silent "$released_template" template_bunkerweb.yaml; then
+            echo "Template $TEMPLATE_VERSION already exists with different contents" >&2
+            exit 1
+          fi
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            assets=$(gh release view "$tag" --json assets --jq '.assets[].name')
+            if grep -qx template_bunkerweb.yaml <<< "$assets" && grep -qx SHA256SUMS <<< "$assets"; then
+              echo "Release $tag already contains this template"
+              exit 0
+            fi
+            echo "Release $tag exists but is missing an expected asset" >&2
+            exit 1
+          fi
+
+          sha256sum template_bunkerweb.yaml > SHA256SUMS
+          gh release create "$tag" template_bunkerweb.yaml SHA256SUMS \
+            --verify-tag \
+            --title "BunkerWeb by HTTP $TEMPLATE_VERSION" \
+            --generate-notes

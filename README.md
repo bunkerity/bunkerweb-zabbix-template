@@ -8,6 +8,9 @@
   <a href="https://www.zabbix.com/documentation/7.0/en/manual/config/templates">
     <img alt="Zabbix 7.0+" src="https://img.shields.io/badge/Zabbix-7.0%2B-d40000?logo=zabbix&logoColor=white" />
   </a>
+  <a href="https://github.com/bunkerity/bunkerweb-zabbix-template/releases">
+    <img alt="Latest template release" src="https://img.shields.io/github/v/release/bunkerity/bunkerweb-zabbix-template?label=template" />
+  </a>
   <a href="https://panel.bunkerweb.io/store/bunkerweb-pro">
     <img alt="BunkerWeb PRO" src="https://img.shields.io/badge/BunkerWeb-PRO-0d6efd" />
   </a>
@@ -21,6 +24,8 @@
   &#124;
   📓 <a href="https://docs.bunkerweb.io/latest/features/#prometheus-exporter-pro">Documentation</a>
   &#124;
+  📦 <a href="https://github.com/bunkerity/bunkerweb-zabbix-template/releases">Releases</a>
+  &#124;
   🎁 <a href="https://panel.bunkerweb.io/store/bunkerweb-pro">Free trial</a>
   &#124;
   🛡️ <a href="https://github.com/bunkerity/bunkerweb">BunkerWeb</a>
@@ -31,6 +36,8 @@
 Monitor [BunkerWeb](https://www.bunkerweb.io/) from Zabbix through the Prometheus exporter PRO plugin.
 
 Zabbix performs one HTTP scrape per interval. Dependent items and discovery rules parse that payload, so you don't need a Zabbix agent on the BunkerWeb instance.
+
+Signed release tags follow the version shown by Zabbix: template version `7.0-0` is published as `v7.0-0`.
 
 ## Requirements
 
@@ -56,7 +63,7 @@ You can find the full Prometheus exporter configuration in the [BunkerWeb docume
 
 ## Import the template
 
-1. Download [`template_bunkerweb.yaml`](./template_bunkerweb.yaml).
+1. Download [`template_bunkerweb.yaml`](https://github.com/bunkerity/bunkerweb-zabbix-template/releases/latest/download/template_bunkerweb.yaml) from the latest release.
 2. In Zabbix, open **Data collection → Templates → Import** and select the file.
 3. Create one host for each BunkerWeb instance.
 4. Add an interface whose address points to that instance. Zabbix builds the scrape URL from `{HOST.CONN}`.
@@ -102,6 +109,19 @@ Set `USE_MONITORING=yes`. The exporter returns HTTP 503 with an explanation when
 ### No services or shared dictionaries appear
 
 Check the `MATCHES` and `NOT_MATCHES` macros on the host. Zabbix includes everything by default.
+
+## Releases
+
+Template versions use Zabbix's `X.Y-N` format. Increase the revision for each change that stays on the same Zabbix export version; start at revision `0` when moving to a new export version.
+
+CI imports both the previous and proposed templates into Zabbix before accepting a version bump. Once the change is on `main`, create and push a signed tag matching the template version:
+
+```shell
+git tag -s v7.0-1 -m "BunkerWeb by HTTP 7.0-1"
+git push origin v7.0-1
+```
+
+GitHub must know the public key used for the signature. CI rejects lightweight, unsigned, unverifiable, and mismatched tags before publishing `template_bunkerweb.yaml` and `SHA256SUMS`.
 
 ## License
 

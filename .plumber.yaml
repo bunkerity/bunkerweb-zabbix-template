@@ -1,0 +1,2 @@
+extends: plumber:default
+version: "2.0"
