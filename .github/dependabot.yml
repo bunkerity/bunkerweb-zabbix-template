@@ -23,4 +23,9 @@ updates:
       - "TheophileDiot"
     commit-message:
       prefix: "deps/tests"
+    ignore:
+      - dependency-name: "nginx"
+        versions: [">= 1.29"]
+      - dependency-name: "zabbix/zabbix-*"
+        versions: [">= 7.1"]
     target-branch: "main"
