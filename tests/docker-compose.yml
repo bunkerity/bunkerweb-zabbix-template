@@ -2,7 +2,7 @@ name: bunkerweb-zabbix-template-test
 
 services:
   metrics:
-    image: nginx:1.28.2-alpine-slim@sha256:8393e91e100dcda823dcdd5f7d08e3e1be61670c41b513c612d2f80913a46a83
+    image: nginx:1.31.4-alpine-slim@sha256:1870de6d59aafee152589b64404556d2535922cdd998e6dac1c4888c938ed8f9
     volumes:
       - ./metrics.prom:/usr/share/nginx/html/metrics:ro
 
