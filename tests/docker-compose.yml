@@ -30,7 +30,7 @@ services:
       POSTGRES_USER: zabbix
 
   web:
-    image: zabbix/zabbix-web-nginx-pgsql:alpine-7.0-latest@sha256:f30732da18993807fb3b3d8571d179bb32b6e391d4e2ab82dd5e132ce33b3325
+    image: zabbix/zabbix-web-nginx-pgsql:alpine-7.0-latest@sha256:ca1d53da20cd56336c4f2b393f6b68b75e5bf53825a3ad4a9130e30ce8d334ca
     depends_on:
       database:
         condition: service_healthy
