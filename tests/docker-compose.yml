@@ -19,7 +19,7 @@ services:
       retries: 30
 
   server:
-    image: zabbix/zabbix-server-pgsql:alpine-7.0-latest@sha256:ae22510b336b37bf0e721be418c69ee8cad35d432954eba5a0d298348771b71c
+    image: zabbix/zabbix-server-pgsql:alpine-7.4-latest@sha256:8037dbf8a4ea23561472eed7cd463f285c4a7443d10a823286eb07319451a66b
     depends_on:
       database:
         condition: service_healthy
