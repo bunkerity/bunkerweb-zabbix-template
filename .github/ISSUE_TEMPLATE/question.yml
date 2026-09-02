@@ -1,0 +1,61 @@
+name: Question
+description: Ask for help using or understanding the BunkerWeb Zabbix template
+labels:
+  - question
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search open and closed issues before asking a question.
+
+        Do not post credentials, tokens, private addresses, or suspected vulnerabilities. Follow the [BunkerWeb security policy](https://github.com/bunkerity/bunkerweb/security/policy) for responsible disclosure.
+  - type: dropdown
+    id: affected-area
+    attributes:
+      label: Affected area
+      description: Select the primary area involved.
+      options:
+        - Template import / compatibility
+        - Metrics and items
+        - Discovery rules
+        - Triggers
+        - Macros / exporter connection
+        - Tests / fixtures
+        - Documentation
+        - CI / releases
+        - Other / unsure
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: What is your question?
+      description: Ask one specific question and describe the result you are trying to achieve.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide the relevant configuration or environment details after removing sensitive data.
+    validations:
+      required: true
+  - type: textarea
+    id: what-tried
+    attributes:
+      label: What have you tried?
+      description: Include the documentation or troubleshooting steps you already checked.
+    validations:
+      required: true
+  - type: textarea
+    id: versions
+    attributes:
+      label: Relevant versions
+      description: If applicable, provide the template, Zabbix, and BunkerWeb versions.
+  - type: checkboxes
+    id: duplicate-search
+    attributes:
+      label: Duplicate search
+      options:
+        - label: I searched open and closed issues and did not find an existing answer.
+          required: true

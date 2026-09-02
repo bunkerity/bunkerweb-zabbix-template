@@ -1,0 +1,90 @@
+name: Bug report
+description: Report a reproducible problem with the BunkerWeb Zabbix template
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search open and closed issues before submitting a report.
+
+        Do not post credentials, tokens, private addresses, or suspected vulnerabilities. Follow the [BunkerWeb security policy](https://github.com/bunkerity/bunkerweb/security/policy) for responsible disclosure.
+  - type: dropdown
+    id: affected-area
+    attributes:
+      label: Affected area
+      description: Select the primary area involved.
+      options:
+        - Template import / compatibility
+        - Metrics and items
+        - Discovery rules
+        - Triggers
+        - Macros / exporter connection
+        - Tests / fixtures
+        - Documentation
+        - CI / releases
+        - Other / unsure
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the observed behavior and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: How can we reproduce it?
+      description: Provide the smallest reliable sequence of steps.
+    validations:
+      required: true
+  - type: input
+    id: template-version
+    attributes:
+      label: Template version
+      description: Provide the imported template version or commit.
+      placeholder: 7.0-0
+    validations:
+      required: true
+  - type: input
+    id: zabbix-version
+    attributes:
+      label: Zabbix version
+      placeholder: 7.0.0
+    validations:
+      required: true
+  - type: input
+    id: bunkerweb-version
+    attributes:
+      label: BunkerWeb version
+      description: Provide the BunkerWeb version exposing the Prometheus metrics.
+    validations:
+      required: true
+  - type: textarea
+    id: metrics
+    attributes:
+      label: Relevant metrics
+      description: Paste only the relevant `/metrics` excerpt after removing sensitive data.
+      render: text
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant errors or logs
+      description: Paste relevant Zabbix or import errors after removing sensitive data.
+      render: shell
+  - type: checkboxes
+    id: duplicate-search
+    attributes:
+      label: Duplicate search
+      options:
+        - label: I searched open and closed issues and did not find an existing report.
+          required: true
+  - type: checkboxes
+    id: removed-private-data
+    attributes:
+      label: Private data
+      options:
+        - label: I removed credentials, tokens, private addresses, and other sensitive data.
+          required: true

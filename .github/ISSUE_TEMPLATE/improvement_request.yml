@@ -1,0 +1,57 @@
+name: Improvement request
+description: Suggest a template, documentation, test, or release improvement
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: Search open and closed issues before submitting a request.
+  - type: dropdown
+    id: affected-area
+    attributes:
+      label: Affected area
+      description: Select the primary area involved.
+      options:
+        - Template import / compatibility
+        - Metrics and items
+        - Discovery rules
+        - Triggers
+        - Macros / exporter connection
+        - Tests / fixtures
+        - Documentation
+        - CI / releases
+        - Other / unsure
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the use case or limitation, not only the proposed implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: desired-outcome
+    attributes:
+      label: Desired outcome
+      description: Describe the behavior or result you would like.
+    validations:
+      required: true
+  - type: textarea
+    id: exporter-data
+    attributes:
+      label: Relevant exporter data
+      description: If applicable, provide the existing metric name and a sanitized sample, or explain what exporter data is missing.
+      render: text
+  - type: textarea
+    id: implementation-ideas
+    attributes:
+      label: Implementation ideas
+      description: Optional links, alternatives, or compatibility considerations.
+  - type: checkboxes
+    id: duplicate-search
+    attributes:
+      label: Duplicate search
+      options:
+        - label: I searched open and closed issues and did not find an existing request.
+          required: true
