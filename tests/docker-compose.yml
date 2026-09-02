@@ -2,7 +2,7 @@ name: bunkerweb-zabbix-template-test
 
 services:
   metrics:
-    image: nginx:1.28.2-alpine-slim@sha256:8393e91e100dcda823dcdd5f7d08e3e1be61670c41b513c612d2f80913a46a83
+    image: nginx:1.28.3-alpine-slim@sha256:b33eedfdf089be1f83759ced27b4deec5b6f1b6fc2a6819ebce0ae351a4406e5
     volumes:
       - ./metrics.prom:/usr/share/nginx/html/metrics:ro
 
@@ -19,7 +19,7 @@ services:
       retries: 30
 
   server:
-    image: zabbix/zabbix-server-pgsql:alpine-7.0-latest@sha256:ae22510b336b37bf0e721be418c69ee8cad35d432954eba5a0d298348771b71c
+    image: zabbix/zabbix-server-pgsql:alpine-7.0-latest@sha256:e3610e5b9033b95a74014813784fd503b73b981e6953358ec533091b3426d581
     depends_on:
       database:
         condition: service_healthy
@@ -30,7 +30,7 @@ services:
       POSTGRES_USER: zabbix
 
   web:
-    image: zabbix/zabbix-web-nginx-pgsql:alpine-7.0-latest@sha256:f30732da18993807fb3b3d8571d179bb32b6e391d4e2ab82dd5e132ce33b3325
+    image: zabbix/zabbix-web-nginx-pgsql:alpine-7.0-latest@sha256:ca1d53da20cd56336c4f2b393f6b68b75e5bf53825a3ad4a9130e30ce8d334ca
     depends_on:
       database:
         condition: service_healthy
