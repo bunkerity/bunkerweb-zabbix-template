@@ -1,6 +1,34 @@
+<p align="center">
+  <a href="https://www.bunkerweb.io/?utm_campaign=self&utm_source=github">
+    <img alt="BunkerWeb logo" src="https://github.com/bunkerity/bunkerweb/raw/master/misc/logo.png" height="100" width="350" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://www.zabbix.com/documentation/7.0/en/manual/config/templates">
+    <img alt="Zabbix 7.0+" src="https://img.shields.io/badge/Zabbix-7.0%2B-d40000?logo=zabbix&logoColor=white" />
+  </a>
+  <a href="https://panel.bunkerweb.io/store/bunkerweb-pro">
+    <img alt="BunkerWeb PRO" src="https://img.shields.io/badge/BunkerWeb-PRO-0d6efd" />
+  </a>
+  <a href="./LICENSE">
+    <img alt="MIT License" src="https://img.shields.io/github/license/bunkerity/bunkerweb-zabbix-template" />
+  </a>
+</p>
+
+<p align="center">
+  🌐 <a href="https://www.bunkerweb.io/?utm_campaign=self&utm_source=github">Website</a>
+  &#124;
+  📓 <a href="https://docs.bunkerweb.io/latest/features/#prometheus-exporter-pro">Documentation</a>
+  &#124;
+  🎁 <a href="https://panel.bunkerweb.io/store/bunkerweb-pro">Free trial</a>
+  &#124;
+  🛡️ <a href="https://github.com/bunkerity/bunkerweb">BunkerWeb</a>
+</p>
+
 # BunkerWeb by HTTP for Zabbix
 
-This repository contains the official Zabbix template for monitoring [BunkerWeb](https://www.bunkerweb.io/) through the Prometheus exporter PRO plugin.
+Monitor [BunkerWeb](https://www.bunkerweb.io/) from Zabbix through the Prometheus exporter PRO plugin.
 
 Zabbix performs one HTTP scrape per interval. Dependent items and discovery rules parse that payload, so you don't need a Zabbix agent on the BunkerWeb instance.
 
