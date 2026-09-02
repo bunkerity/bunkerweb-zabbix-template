@@ -1,0 +1,40 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: check-ast
+
+  - repo: https://github.com/psf/black
+    rev: 87928e6d6761a4a6d22250e1fee5601b3998086e # frozen: 26.5.1
+    hooks:
+      - id: black
+        name: Black Python Formatter
+        language_version: python3.10
+
+  - repo: local
+    hooks:
+      - id: prettier
+        name: Prettier
+        entry: prettier --write
+        language: system
+        types: [text]
+        files: \.(markdown|md|yaml|yml)$
+        exclude: ^template_bunkerweb\.yaml$
+
+  - repo: https://github.com/pycqa/flake8
+    rev: d93590f5be797aabb60e3b09f2f52dddb02f349f # frozen: 7.3.0
+    hooks:
+      - id: flake8
+        name: Flake8 Python Linter
+        args: ["--max-line-length=160", "--ignore=E266,E402,E501,E722,W503"]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: 2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a # frozen: v2.4.2
+    hooks:
+      - id: codespell

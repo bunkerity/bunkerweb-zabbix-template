@@ -6,7 +6,13 @@
 
 ## Build, Test, and Development Commands
 
-The repository has no build step. Run CI's core integration flow:
+The repository has no build step. Run the fast repository checks first:
+
+```sh
+pre-commit run --all-files
+```
+
+Run CI's core integration flow after changes to the template, fixture, or import harness:
 
 ```sh
 docker compose -f tests/docker-compose.yml up -d --wait
@@ -21,9 +27,9 @@ The import command loads the template, creates a test host, and checks required 
 
 ## Coding Style & Naming Conventions
 
-Use two-space indentation in YAML and preserve the export's existing key order, quoted scalar style, and stable UUIDs. Avoid whole-file reformatting. Zabbix item keys use the existing `bw.*` pattern; user macros use `{$BUNKERWEB.*}`.
+Use two-space indentation in YAML and preserve the export's existing key order, quoted scalar style, and stable UUIDs. `template_bunkerweb.yaml` is checked as YAML but excluded from Prettier to avoid whole-file export churn. Other YAML and Markdown files use Prettier defaults. Zabbix item keys use the existing `bw.*` pattern; user macros use `{$BUNKERWEB.*}`.
 
-Python uses four-space indentation, `snake_case` for functions and variables, and uppercase names for constants. Keep the test harness on the standard library unless a new dependency has a measured benefit.
+Python is formatted with Black and linted with the Flake8 settings in `.pre-commit-config.yaml`. Use `snake_case` for functions and variables and uppercase names for constants. Keep the test harness on the standard library unless a new dependency has a measured benefit.
 
 ## Testing Guidelines
 

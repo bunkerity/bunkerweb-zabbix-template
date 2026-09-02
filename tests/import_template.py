@@ -16,7 +16,11 @@ VERSION_PATTERN = r"(\d+)\.(\d+)-(\d+)"
 HOST_NAME = "bunkerweb-template-test"
 GROUP_NAME = "BunkerWeb template test"
 REQUIRED_ITEMS = ("bw.scrape.ok", "bw.build.version", "bw.metric_errors")
-REQUIRED_DISCOVERED_PREFIXES = ("bw.requests.total[", "bw.latency.avg[", "bw.shm.capacity[")
+REQUIRED_DISCOVERED_PREFIXES = (
+    "bw.requests.total[",
+    "bw.latency.avg[",
+    "bw.shm.capacity[",
+)
 
 
 class ZabbixError(RuntimeError):
@@ -26,7 +30,9 @@ class ZabbixError(RuntimeError):
 def call(url, method, params, token=None, timeout=30):
     request = Request(
         url,
-        data=dumps({"jsonrpc": "2.0", "method": method, "params": params, "id": 1}).encode(),
+        data=dumps(
+            {"jsonrpc": "2.0", "method": method, "params": params, "id": 1}
+        ).encode(),
         headers={"Content-Type": "application/json-rpc"},
     )
     if token:
@@ -50,7 +56,15 @@ def wait_for_api(url, deadline):
 def import_template(url, token, path):
     rules = {
         name: {"createMissing": True, "updateExisting": True}
-        for name in ("template_groups", "templates", "items", "discoveryRules", "triggers", "valueMaps", "host_groups")
+        for name in (
+            "template_groups",
+            "templates",
+            "items",
+            "discoveryRules",
+            "triggers",
+            "valueMaps",
+            "host_groups",
+        )
     }
     call(
         url,
@@ -61,7 +75,10 @@ def import_template(url, token, path):
     templates = call(
         url,
         "template.get",
-        {"filter": {"host": [TEMPLATE_NAME]}, "output": ["templateid", "vendor_name", "vendor_version"]},
+        {
+            "filter": {"host": [TEMPLATE_NAME]},
+            "output": ["templateid", "vendor_name", "vendor_version"],
+        },
         token,
     )
     if not templates:
@@ -75,8 +92,14 @@ def create_test_host(url, token, templateid, target):
         call(url, "host.delete", [existing[0]["hostid"]], token)
 
     groups = call(url, "hostgroup.get", {"filter": {"name": [GROUP_NAME]}}, token)
-    groupid = groups[0]["groupid"] if groups else call(url, "hostgroup.create", {"name": GROUP_NAME}, token)["groupids"][0]
-    is_ipv4 = target.count(".") == 3 and all(part.isdigit() for part in target.split("."))
+    groupid = (
+        groups[0]["groupid"]
+        if groups
+        else call(url, "hostgroup.create", {"name": GROUP_NAME}, token)["groupids"][0]
+    )
+    is_ipv4 = target.count(".") == 3 and all(
+        part.isdigit() for part in target.split(".")
+    )
     params = {
         "host": HOST_NAME,
         "interfaces": [
@@ -102,17 +125,33 @@ def create_test_host(url, token, templateid, target):
 def wait_for_collection(url, token, hostid, deadline):
     missing = list(REQUIRED_DISCOVERED_PREFIXES)
     while time() < deadline:
-        items = call(url, "item.get", {"hostids": hostid, "output": ["key_", "state", "error", "lastvalue"]}, token)
+        items = call(
+            url,
+            "item.get",
+            {"hostids": hostid, "output": ["key_", "state", "error", "lastvalue"]},
+            token,
+        )
         keys = [item["key_"] for item in items]
-        missing = [prefix for prefix in REQUIRED_DISCOVERED_PREFIXES if not any(key.startswith(prefix) for key in keys)]
+        missing = [
+            prefix
+            for prefix in REQUIRED_DISCOVERED_PREFIXES
+            if not any(key.startswith(prefix) for key in keys)
+        ]
         unsupported = [item for item in items if item["state"] == "1"]
         required = [item for item in items if item["key_"] in REQUIRED_ITEMS]
-        if not missing and len(required) == len(REQUIRED_ITEMS) and all(item["lastvalue"] != "" for item in required) and not unsupported:
+        if (
+            not missing
+            and len(required) == len(REQUIRED_ITEMS)
+            and all(item["lastvalue"] != "" for item in required)
+            and not unsupported
+        ):
             return len(items)
         sleep(5)
 
     if missing:
-        raise ZabbixError(f"low-level discovery did not create items for: {', '.join(missing)}")
+        raise ZabbixError(
+            f"low-level discovery did not create items for: {', '.join(missing)}"
+        )
     if unsupported:
         details = "; ".join(f"{item['key_']}: {item['error']}" for item in unsupported)
         raise ZabbixError(f"unsupported items: {details}")
@@ -142,7 +181,9 @@ def main():
 
     previous_version = None
     if args.previous_template:
-        previous_version = import_template(args.url, token, args.previous_template)["vendor_version"]
+        previous_version = import_template(args.url, token, args.previous_template)[
+            "vendor_version"
+        ]
 
     template = import_template(args.url, token, args.template)
     vendor = template["vendor_name"]
@@ -151,10 +192,15 @@ def main():
         raise ZabbixError(f"vendor must be {VENDOR_NAME!r}, got {vendor!r}")
     current = version_tuple(version)
 
-    if previous_version and args.template.read_bytes() != args.previous_template.read_bytes():
+    if (
+        previous_version
+        and args.template.read_bytes() != args.previous_template.read_bytes()
+    ):
         previous = version_tuple(previous_version)
         if current <= previous:
-            raise ZabbixError(f"changed template must bump vendor version above {previous_version}, got {version}")
+            raise ZabbixError(
+                f"changed template must bump vendor version above {previous_version}, got {version}"
+            )
 
     if args.github_output:
         with args.github_output.open("a", encoding="utf-8") as output:
@@ -162,7 +208,9 @@ def main():
 
     hostid = create_test_host(args.url, token, template["templateid"], args.target)
     item_count = wait_for_collection(args.url, token, hostid, deadline)
-    print(f"Imported {TEMPLATE_NAME} {version} into Zabbix {api_version}; {item_count} host items are supported")
+    print(
+        f"Imported {TEMPLATE_NAME} {version} into Zabbix {api_version}; {item_count} host items are supported"
+    )
 
 
 if __name__ == "__main__":
