@@ -40,7 +40,7 @@ Monitor [BunkerWeb](https://www.bunkerweb.io/) from Zabbix through the Prometheu
 
 Zabbix performs one HTTP scrape per interval. Dependent items and discovery rules parse that payload, so you don't need a Zabbix agent on the BunkerWeb instance.
 
-Signed release tags follow the version shown by Zabbix: template version `7.0-0` is published as `v7.0-0`.
+Signed release tags follow the version shown by Zabbix: template version `7.0-1` is published as `v7.0-1`.
 
 ## Requirements
 
@@ -98,6 +98,8 @@ Override macros on the host when one instance needs different connection details
 Zabbix collects the BunkerWeb version and availability, connections, requests, attacks, response codes, latency, bandwidth, upstream behavior, cache status, TLS protocol use, metric collection errors, and NGINX shared dictionary data.
 
 Zabbix discovers BunkerWeb services and shared dictionaries, then creates the matching items and triggers. It raises problems for exporter reachability, an uninitialized Monitoring plugin, metric collection errors, sustained server errors, elevated attack rates, failing backends, deprecated TLS versions, and projected shared-dictionary exhaustion.
+
+The **BunkerWeb overview** dashboard shows exporter availability, the BunkerWeb version, metric pipeline errors, and current NGINX connections.
 
 ## Troubleshooting
 

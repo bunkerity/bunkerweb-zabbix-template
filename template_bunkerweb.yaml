@@ -27,7 +27,7 @@ zabbix_export:
         https://github.com/bunkerity/bunkerweb-zabbix-template
       vendor:
         name: Bunkerity
-        version: "7.0-0"
+        version: "7.0-1"
       groups:
         - name: Templates/Applications
       items:
@@ -807,6 +807,82 @@ zabbix_export:
               tags:
                 - tag: scope
                   value: capacity
+
+      dashboards:
+        - uuid: "3b79e95f851a4bcc9a06fa408be6d45c"
+          name: "BunkerWeb overview"
+          pages:
+            - name: Overview
+              widgets:
+                - type: item
+                  name: "Exporter availability"
+                  width: "12"
+                  height: "3"
+                  fields:
+                    - type: INTEGER
+                      name: decimal_places
+                      value: "0"
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: "BunkerWeb by HTTP"
+                        key: bw.scrape.ok
+                - type: item
+                  name: "BunkerWeb version"
+                  x: "12"
+                  width: "12"
+                  height: "3"
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: "BunkerWeb by HTTP"
+                        key: bw.build.version
+                - type: item
+                  name: "Metric pipeline errors"
+                  'y': "3"
+                  width: "12"
+                  height: "3"
+                  fields:
+                    - type: INTEGER
+                      name: decimal_places
+                      value: "0"
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: "BunkerWeb by HTTP"
+                        key: bw.metric_errors
+                - type: svggraph
+                  name: "NGINX connections"
+                  x: "12"
+                  'y': "3"
+                  width: "12"
+                  height: "5"
+                  fields:
+                    - type: STRING
+                      name: ds.0.color
+                      value: 2196F3
+                    - type: ITEM
+                      name: ds.0.itemids.0
+                      value:
+                        host: "BunkerWeb by HTTP"
+                        key: "bw.connections[reading]"
+                    - type: STRING
+                      name: ds.1.color
+                      value: 4CAF50
+                    - type: ITEM
+                      name: ds.1.itemids.0
+                      value:
+                        host: "BunkerWeb by HTTP"
+                        key: "bw.connections[writing]"
+                    - type: STRING
+                      name: ds.2.color
+                      value: FF9800
+                    - type: ITEM
+                      name: ds.2.itemids.0
+                      value:
+                        host: "BunkerWeb by HTTP"
+                        key: "bw.connections[waiting]"
 
       macros:
         - macro: "{$BUNKERWEB.EXPORTER.SCHEME}"

@@ -11,6 +11,7 @@ from urllib.error import URLError
 from urllib.request import Request, urlopen
 
 TEMPLATE_NAME = "BunkerWeb by HTTP"
+DASHBOARD_NAME = "BunkerWeb overview"
 VENDOR_NAME = "Bunkerity"
 VERSION_PATTERN = r"(\d+)\.(\d+)-(\d+)"
 HOST_NAME = "bunkerweb-template-test"
@@ -53,7 +54,7 @@ def wait_for_api(url, deadline):
     raise ZabbixError("Zabbix API never became ready")
 
 
-def import_template(url, token, path):
+def import_template(url, token, path, require_dashboard=False):
     rules = {
         name: {"createMissing": True, "updateExisting": True}
         for name in (
@@ -62,6 +63,7 @@ def import_template(url, token, path):
             "items",
             "discoveryRules",
             "triggers",
+            "templateDashboards",
             "valueMaps",
             "host_groups",
         )
@@ -83,6 +85,17 @@ def import_template(url, token, path):
     )
     if not templates:
         raise ZabbixError(f"template {TEMPLATE_NAME!r} is absent after import")
+    if require_dashboard:
+        dashboards = call(
+            url,
+            "templatedashboard.get",
+            {"templateids": [templates[0]["templateid"]], "output": ["name"]},
+            token,
+        )
+        if [dashboard["name"] for dashboard in dashboards] != [DASHBOARD_NAME]:
+            raise ZabbixError(
+                f"template dashboard {DASHBOARD_NAME!r} is absent after import"
+            )
     return templates[0]
 
 
@@ -185,7 +198,7 @@ def main():
             "vendor_version"
         ]
 
-    template = import_template(args.url, token, args.template)
+    template = import_template(args.url, token, args.template, require_dashboard=True)
     vendor = template["vendor_name"]
     version = template["vendor_version"]
     if vendor != VENDOR_NAME:
