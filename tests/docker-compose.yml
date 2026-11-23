@@ -7,7 +7,7 @@ services:
       - ./metrics.prom:/usr/share/nginx/html/metrics:ro
 
   database:
-    image: postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2
+    image: postgres:19-alpine@sha256:8b0ff4cdf221f0c53d7fcda681d3b461be725c492cd881c5ec9c0ad25023f188
     environment:
       POSTGRES_DB: zabbix
       POSTGRES_PASSWORD: zabbix
